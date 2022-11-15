@@ -4,14 +4,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <string.h>
 #include <signal.h>
 
 int fd;
+char *array;
 
 void send_to_child(pid_t pid, char *string1, char *string2);
-void send_to_parent();
-void get_from_child();
-void get_from_parent();
+void send_to_parent(char *string1, char *string2);
+void get_from_child(char *str;);
+void get_from_parent(char *string1, char *string2);
 
 void *child_handler(int nsig);
 
@@ -26,6 +28,11 @@ int main() {
         perror("Error opening file!");
         exit(-1);
     }
+
+
+    array = mmap(NULL, 2048, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    strcpy(array, "123");
+    printf("%s\n", array);
 
     pid_t child_pid  = fork();
     switch (child_pid) {
@@ -53,12 +60,14 @@ int main() {
 }
 
 void *child_handler(int nsig) {
-    //get_from_parent();
-    //send_to_parent();
+    char *string1; char *string2;
+
+    //get_from_parent(string1, string2);
+    //send_to_parent(string1, string2);
+
     printf("handler\n");
 
     child_waiting = 0; //stop child
-
 }
 
 void child() {
@@ -83,23 +92,34 @@ void child() {
 
 void parent(pid_t pid) {
     char string1[] = "Hello \0";
-    char string2[] = "world!\n\0";
+    char string2[] = "world!\0";
 
     send_to_child(pid, string1, string2);
     wait();
-    //get_from_child();
+
+    char *str;
+    //get_from_child(str);
+    //write(1, str, strlen(str));
+    write(1, '\n', 1);
 }
 
 void send_to_child(pid_t pid, char *string1, char *string2) {
     printf("Parent sending to child\n");
 
-    /*int i = 0;
-    while (string1[i] != '\n' && string1[i] != '\0') i++;
-    write(fd, string1, ++i);
-
-    i = 0;
-    while (string2[i] != '\n' && string2[i] != '\0') i++;
-    write(fd, string2, ++i);*/
+    strcpy(array, strcat(string1, string2));
 
     kill(pid, SIGUSR1);
+}
+
+void send_to_parent(char *string1, char *string2) {
+    strcpy(array, strcat(string2, string1));
+}
+
+void get_from_parent(char *string1, char *string2) {
+    strcpy(string1, array);
+    strcpy(string2, array);
+}
+
+void get_from_child(char *str) {
+    strcpy(str, array);
 }
