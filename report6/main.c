@@ -12,7 +12,7 @@ char *array;
 
 void send_to_child(pid_t pid, char *string1, char *string2);
 void send_to_parent(char *string1, char *string2);
-void get_from_child(char *str;);
+void get_from_child(char *str);
 void get_from_parent(char *string1, char *string2);
 
 void *child_handler(int nsig);
@@ -125,8 +125,8 @@ void get_from_parent(char *string1, char *string2) {
     char *str;
     //strcpy(str, array);
 
-    int i = strstr(str, "\n");
-    strncpy(string1, str, i);
+    // = strstr(str, "\n");
+    //strncpy(string1, str, i);
     //write(1, array, strlen(array));
 }
 
