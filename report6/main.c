@@ -29,26 +29,27 @@ int main() {
         exit(-1);
     }
 
-
     array = mmap(NULL, 2048, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    strcpy(array, "123");
+    strcpy(array, "on\0");
     printf("%s\n", array);
 
-    pid_t child_pid  = fork();
+    pid_t child_pid = fork();
     switch (child_pid) {
         case -1:
             printf("Error doing fork()!\n");
             exit(-1);
             break;
         case 0:
-            printf( "C\n");
+            printf("C\n");
+
             child();
 
             printf("Child exit 0\n");
             break;
         default:
-            sleep(1); //ToDo; nvm, fuck this. Its not too bad this way.
             printf("P\n");
+
+            sleep(1); //fuck this shit, Im out.
             parent(child_pid);
 
             close(fd);
@@ -60,10 +61,6 @@ int main() {
 }
 
 void *child_handler(int nsig) {
-    char *string1; char *string2;
-
-    //get_from_parent(string1, string2);
-    //send_to_parent(string1, string2);
 
     printf("handler\n");
 
@@ -88,13 +85,21 @@ void child() {
         printf("Waiting for signal from parent...\n");
         sleep(1);
     }
+
+    printf("post handler\n");
+
+    char *string1; char *string2;
+
+    get_from_parent(string1, string2);
+    //send_to_parent(string1, string2);
 }
 
 void parent(pid_t pid) {
-    char string1[] = "Hello \0";
-    char string2[] = "world!\0";
+    char string1[] = "Hello \n\0";
+    char string2[] = "world!\n\0";
 
     send_to_child(pid, string1, string2);
+    sleep(2);
     wait();
 
     char *str;
@@ -107,6 +112,7 @@ void send_to_child(pid_t pid, char *string1, char *string2) {
     printf("Parent sending to child\n");
 
     strcpy(array, strcat(string1, string2));
+    //write(1, array, strlen(array));
 
     kill(pid, SIGUSR1);
 }
@@ -116,8 +122,12 @@ void send_to_parent(char *string1, char *string2) {
 }
 
 void get_from_parent(char *string1, char *string2) {
-    strcpy(string1, array);
-    strcpy(string2, array);
+    char *str;
+    //strcpy(str, array);
+
+    int i = strstr(str, "\n");
+    strncpy(string1, str, i);
+    //write(1, array, strlen(array));
 }
 
 void get_from_child(char *str) {
