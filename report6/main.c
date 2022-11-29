@@ -7,6 +7,8 @@
 #include <string.h>
 #include <signal.h>
 
+// common space
+
 int fd;
 char *array;
 
@@ -24,15 +26,18 @@ void child();
 void parent(pid_t pid);
 
 int main() {
+    // create file; get fd
     if ((fd = open("commonfile.tmp", O_CREAT | O_RDWR, 0666)) < 0) {
         perror("Error opening file!");
         exit(-1);
     }
 
-
+    // get file adress
     array = mmap(NULL, 2048, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    strcpy(array, "123");
+    strcpy(array, "123\n"); //test
     printf("%s\n", array);
+
+    //division zone:
 
     pid_t child_pid  = fork();
     switch (child_pid) {
@@ -41,12 +46,20 @@ int main() {
             exit(-1);
             break;
         case 0:
+
+        //  child space
+
             printf( "C\n");
             child();
 
             printf("Child exit 0\n");
             break;
+        //  ^ child space end
+
         default:
+
+        //  parent space
+
             sleep(1); //ToDo; nvm, fuck this. Its not too bad this way.
             printf("P\n");
             parent(child_pid);
@@ -54,16 +67,19 @@ int main() {
             close(fd);
             printf("Parent exit 0\n");
             break;
+        //  ^ parent space end
     }
+
+    //common space
 
     return 0;
 }
 
 void *child_handler(int nsig) {
-    char *string1; char *string2;
+    char string1[255]; char string2[255];
 
-    //get_from_parent(string1, string2);
-    //send_to_parent(string1, string2);
+    get_from_parent(string1, string2);
+    send_to_parent(string1, string2);
 
     printf("handler\n");
 
@@ -91,33 +107,55 @@ void child() {
 }
 
 void parent(pid_t pid) {
-    char string1[] = "Hello \0";
-    char string2[] = "world!\0";
+    char string1[] = "world!\n";
+    char string2[] = "Hello \n";
 
     send_to_child(pid, string1, string2);
     wait();
 
-    char *str;
-    //get_from_child(str);
-    //write(1, str, strlen(str));
-    write(1, '\n', 1);
+    char str[255];
+    get_from_child(str);
+    write(1, str, strlen(str)-1);
 }
 
 void send_to_child(pid_t pid, char *string1, char *string2) {
     printf("Parent sending to child\n");
 
-    strcpy(array, strcat(string1, string2));
+    //strcpy(array, strcat(string1, string2));
+    int i = 0;
+    for (; string1[i] != '\n'; i++) {
+        array[i] = string1[i];
+    }
+    array[i++] = '\n';
+    int j = 0;
+    for (; string2[j] != '\n'; i++, j++) {
+        array[i] = string2[j];
+    }
+    array[i++] = '\n';
 
     kill(pid, SIGUSR1);
+    sleep(2);
 }
 
 void send_to_parent(char *string1, char *string2) {
     strcpy(array, strcat(string2, string1));
+    array[strlen(array)] = '\n';
 }
 
 void get_from_parent(char *string1, char *string2) {
-    strcpy(string1, array);
-    strcpy(string2, array);
+    //strcpy(string1, array);
+    //strcpy(string2, array);
+
+    int i = 0;
+    for (; array[i] != '\n'; i++) {
+        string1[i] = array[i];
+    }
+    i++;
+
+    int j = 0;
+    for (; array[i] != '\n'; i++, j++) {
+        string2[j] = array[i];
+    }
 }
 
 void get_from_child(char *str) {
