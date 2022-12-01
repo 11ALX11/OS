@@ -1,0 +1,4 @@
+#! /bin/bash
+
+gcc -Wall -O2  -c /home/aleksei/github/OS/report6/main.c -o obj/Release/main.o
+gcc  -o bin/Release/report6 obj/Release/main.o  -s

@@ -34,8 +34,6 @@ int main() {
 
     // get file adress
     array = mmap(NULL, 2048, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    strcpy(array, "123\n"); //test
-    printf("%s\n", array);
 
     //division zone:
 
@@ -60,10 +58,8 @@ int main() {
 
         //  parent space
 
-            sleep(1); //ToDo; nvm, fuck this. Its not too bad this way.
+            sleep(1);
             printf("P\n");
-
-            sleep(1); //fuck this shit, Im out.
             parent(child_pid);
 
             close(fd);
@@ -106,13 +102,6 @@ void child() {
         printf("Waiting for signal from parent...\n");
         sleep(1);
     }
-
-    printf("post handler\n");
-
-    char *string1; char *string2;
-
-    get_from_parent(string1, string2);
-    //send_to_parent(string1, string2);
 }
 
 void parent(pid_t pid) {
@@ -120,16 +109,16 @@ void parent(pid_t pid) {
     char string2[] = "Hello \n";
 
     send_to_child(pid, string1, string2);
-    sleep(2);
-    wait();
+    sleep(1); //wait();
 
     char str[255];
     get_from_child(str);
+    printf("Received:\n");
     write(1, str, strlen(str)-1);
 }
 
 void send_to_child(pid_t pid, char *string1, char *string2) {
-    printf("Parent sending to child\n");
+    printf("Parent sending to child...\n");
 
     //strcpy(array, strcat(string1, string2));
     int i = 0;
@@ -143,8 +132,9 @@ void send_to_child(pid_t pid, char *string1, char *string2) {
     }
     array[i++] = '\n';
 
+    printf("Parent sent to child:\n%s%s", string1, string2);
     kill(pid, SIGUSR1);
-    sleep(2);
+    printf("Parent sent signal to child\n");
 }
 
 void send_to_parent(char *string1, char *string2) {
