@@ -14,7 +14,7 @@ char *array;
 
 void send_to_child(pid_t pid, char *string1, char *string2);
 void send_to_parent(char *string1, char *string2);
-void get_from_child(char *str;);
+void get_from_child(char *str);
 void get_from_parent(char *string1, char *string2);
 
 void *child_handler(int nsig);
@@ -62,6 +62,8 @@ int main() {
 
             sleep(1); //ToDo; nvm, fuck this. Its not too bad this way.
             printf("P\n");
+
+            sleep(1); //fuck this shit, Im out.
             parent(child_pid);
 
             close(fd);
@@ -104,6 +106,13 @@ void child() {
         printf("Waiting for signal from parent...\n");
         sleep(1);
     }
+
+    printf("post handler\n");
+
+    char *string1; char *string2;
+
+    get_from_parent(string1, string2);
+    //send_to_parent(string1, string2);
 }
 
 void parent(pid_t pid) {
@@ -111,6 +120,7 @@ void parent(pid_t pid) {
     char string2[] = "Hello \n";
 
     send_to_child(pid, string1, string2);
+    sleep(2);
     wait();
 
     char str[255];
