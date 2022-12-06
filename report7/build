@@ -1,0 +1,8 @@
+#! /bin/bash
+
+gcc -Wall -O2  -c ./proc1.c -o obj/Release/proc1.o
+gcc -lrt -o bin/Release/proc1 obj/Release/proc1.o  -s
+
+gcc -Wall -O2  -c ./proc2.c -o obj/Release/proc2.o
+gcc -lrt -o bin/Release/proc2 obj/Release/proc2.o  -s
+
