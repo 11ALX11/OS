@@ -19,11 +19,12 @@ int main() {
 
     while (1) {
         char chr;
+
+        sem_wait(empty); //P(empty)
+
         if (!read(0, &chr, 1)) {
             continue;
         }
-
-        sem_wait(empty); //P(empty)
 
         pthread_mutex_lock(&mutex);
 
